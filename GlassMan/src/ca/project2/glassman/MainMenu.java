@@ -27,6 +27,8 @@ import org.anddev.andengine.opengl.texture.region.TextureRegion;
 import org.anddev.andengine.opengl.texture.region.TextureRegionFactory;
 import org.anddev.andengine.ui.activity.BaseGameActivity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Handler;
@@ -174,7 +176,21 @@ public class MainMenu extends BaseGameActivity implements IOnMenuItemClickListen
 				mHandler.postDelayed(mLaunchLevel1Task,1000);
 				return true;
 			case MENU_HELP:
-				Toast.makeText(MainMenu.this, "Help selected", Toast.LENGTH_SHORT).show();
+				AlertDialog.Builder builder = new AlertDialog.Builder(this); // creates new dialogbox		 
+				 builder.setCancelable(false); // user cant cancel the textbox must select yes or no
+				 builder.setTitle("Help"); // sets dialogbox title
+				 builder.setMessage("It works"); // sets dialogbox message
+				 
+				 builder.setInverseBackgroundForced(true); // inveses the background
+				 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() { // creates the yes button for the dialogbox
+				   
+					 @Override
+				   public void onClick(DialogInterface dialog, int which) {
+					      dialog.dismiss(); // closes dialogbox
+				   }
+				 });
+				 AlertDialog alert = builder.create(); 
+				 alert.show(); // shows dialogbox
 				return true;
 			default:
 				return false;
