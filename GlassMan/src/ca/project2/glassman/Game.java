@@ -11,107 +11,77 @@ import org.anddev.andengine.entity.scene.background.ParallaxBackground.ParallaxE
 import org.anddev.andengine.entity.sprite.AnimatedSprite;
 import org.anddev.andengine.entity.sprite.Sprite;
 import org.anddev.andengine.entity.util.FPSLogger;
+import org.anddev.andengine.opengl.texture.Texture;
 import org.anddev.andengine.opengl.texture.TextureOptions;
-import org.anddev.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
-import org.anddev.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.anddev.andengine.opengl.texture.region.TextureRegion;
+import org.anddev.andengine.opengl.texture.region.TextureRegionFactory;
 import org.anddev.andengine.opengl.texture.region.TiledTextureRegion;
-
+import org.anddev.andengine.entity.scene.background.AutoParallaxBackground;
+import org.anddev.andengine.entity.scene.background.ParallaxBackground.ParallaxEntity;
 
 public class Game extends BackgroundHelper {
-	// ===========================================================
-	// Constants
-	// ===========================================================
+
 
 	private static final int CAMERA_WIDTH = 720;
 	private static final int CAMERA_HEIGHT = 480;
 
-	// ===========================================================
-	// Fields
-	// ===========================================================
 
 	private Camera mCamera;
+    
 
-	private BitmapTextureAtlas mBitmapTextureAtlas;
-	private TiledTextureRegion mPlayerTextureRegion;
-	private TiledTextureRegion mEnemyTextureRegion;
+    private Texture mTexture;
+   
+ 
+    private Texture mAutoParallaxBackgroundTexture;
 
-	private BitmapTextureAtlas mAutoParallaxBackgroundTexture;
+    private TextureRegion mParallaxLayerBack;   
+   
+    @Override
+    public Engine onLoadEngine() {
+            this.mCamera = new Camera (0,0,CAMERA_WIDTH, CAMERA_HEIGHT);
+            return new Engine(new EngineOptions(true, ScreenOrientation.LANDSCAPE, new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), this.mCamera));
+    }
+   
+    @Override
+    public void onLoadResources() {
+            this.mTexture = new Texture(256, 128, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
 
-	private TextureRegion mParallaxLayerBack;
-
-	// ===========================================================
-	// Constructors
-	// ===========================================================
-
-	// ===========================================================
-	// Getter & Setter
-	// ===========================================================
-
-	// ===========================================================
-	// Methods for/from SuperClass/Interfaces
-	// ===========================================================
-
-	@Override
-	public Engine onLoadEngine() {
-		this.mCamera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
-		return new Engine(new EngineOptions(true, ScreenOrientation.LANDSCAPE, new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), this.mCamera));
-	}
-
-	@Override
-	public void onLoadResources() {
-		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
-		
-		this.mBitmapTextureAtlas = new BitmapTextureAtlas(256, 128, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
-		this.mPlayerTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "player.png", 0, 0, 3, 4);
-		this.mEnemyTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "enemy.png", 73, 0, 3, 4);
-
-		this.mAutoParallaxBackgroundTexture = new BitmapTextureAtlas(1024, 1024, TextureOptions.DEFAULT);
-		this.mParallaxLayerBack = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mAutoParallaxBackgroundTexture, this, "Background.png", 0, 188);
-
-		this.mEngine.getTextureManager().loadTextures(this.mBitmapTextureAtlas, this.mAutoParallaxBackgroundTexture);
-	}
-
-	@Override
-	public Scene onLoadScene() {
-		this.mEngine.registerUpdateHandler(new FPSLogger());
-
-		final Scene scene = new Scene();
-		final AutoParallaxBackground autoParallaxBackground = new AutoParallaxBackground(0, 0, 0, 5);
-		autoParallaxBackground.attachParallaxEntity(new ParallaxEntity(-10.0f, new Sprite(0, CAMERA_HEIGHT - this.mParallaxLayerBack.getHeight(), this.mParallaxLayerBack)));
-		scene.setBackground(autoParallaxBackground);
-
-		/* Calculate the coordinates for the face, so its centered on the camera. */
-		final int playerX = (CAMERA_WIDTH - this.mPlayerTextureRegion.getTileWidth()) / 2;
-		final int playerY = CAMERA_HEIGHT - this.mPlayerTextureRegion.getTileHeight() - 5;
-
-		/* Create two sprits and add it to the scene. */
-		final AnimatedSprite player = new AnimatedSprite(playerX + 80, playerY, this.mPlayerTextureRegion);
-		player.setScaleCenterY(this.mPlayerTextureRegion.getTileHeight());
-		player.setScale(2);
-		player.animate(new long[]{200, 200, 200}, 3, 5, true);
-
-		final AnimatedSprite enemy = new AnimatedSprite(playerX - 80, playerY, this.mEnemyTextureRegion);
-		enemy.setScaleCenterY(this.mEnemyTextureRegion.getTileHeight());
-		enemy.setScale(2);
-		enemy.animate(new long[]{200, 200, 200}, 3, 5, true);
-
-		scene.attachChild(player);
-		scene.attachChild(enemy);
-
-		return scene;
-	}
-
-	@Override
-	public void onLoadComplete() {
-
-	}
-
-	// ===========================================================
-	// Methods
-	// ===========================================================
-
-	// ===========================================================
-	// Inner and Anonymous Classes
-	// ===========================================================
+            this.mAutoParallaxBackgroundTexture = new Texture(1024, 1024, TextureOptions.DEFAULT);
+            this.mParallaxLayerBack = TextureRegionFactory.createFromAsset(this.mAutoParallaxBackgroundTexture, this, "gfx/BackgroundResized.png", 0, 188);
+            
+            this.mEngine.getTextureManager().loadTexture(this.mTexture);
+            this.mEngine.getTextureManager().loadTexture(this.mAutoParallaxBackgroundTexture);
+           
+    }
+    @Override
+    public Scene onLoadScene() {
+            this.mEngine.registerUpdateHandler(new FPSLogger());
+           
+            final Scene scene = new Scene(1);
+            final AutoParallaxBackground autoParallaxBackground = new AutoParallaxBackground(0, 0, 0, 5);
+            autoParallaxBackground.attachParallaxEntity(new ParallaxEntity(-20.0f, new Sprite(0, CAMERA_HEIGHT - this.mParallaxLayerBack.getHeight(), this.mParallaxLayerBack)));
+            scene.setBackground(autoParallaxBackground);
+            
+//            private void createTiledSprite()
+//            {
+//                    AnimatedSprite Player = new AnimatedSprite(0, 0, tiledTextureRegion, vbo);
+//                    long[] frameDurration = {100, 100, 100};
+//                    as.animate(frameDurration);
+//                    scene.attachChild(as);
+//            }
+            
+            
+            
+            
+            return scene;
+            
+            
+    }
+    @Override
+    public void onLoadComplete() {
+            // TODO Auto-generated method stub
+           
+           
+    }
+	
 }
