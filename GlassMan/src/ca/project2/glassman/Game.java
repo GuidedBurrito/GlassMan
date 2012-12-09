@@ -33,7 +33,7 @@ public class Game extends BackgroundHelper {
    
  
     private Texture mAutoParallaxBackgroundTexture;
-
+    private TiledTextureRegion mPlayerTextureRegion;
     private TextureRegion mParallaxLayerBack;   
    
     @Override
@@ -48,7 +48,7 @@ public class Game extends BackgroundHelper {
 
             this.mAutoParallaxBackgroundTexture = new Texture(1024, 1024, TextureOptions.DEFAULT);
             this.mParallaxLayerBack = TextureRegionFactory.createFromAsset(this.mAutoParallaxBackgroundTexture, this, "gfx/BackgroundResized.png", 0, 188);
-            
+            this.mPlayerTextureRegion = TextureRegionFactory.createTiledFromAsset(this.mTexture, this, "gfx/GlassPlayer.png", 0, 0, 3, 4);
             this.mEngine.getTextureManager().loadTexture(this.mTexture);
             this.mEngine.getTextureManager().loadTexture(this.mAutoParallaxBackgroundTexture);
            
@@ -62,16 +62,16 @@ public class Game extends BackgroundHelper {
             autoParallaxBackground.attachParallaxEntity(new ParallaxEntity(-20.0f, new Sprite(0, CAMERA_HEIGHT - this.mParallaxLayerBack.getHeight(), this.mParallaxLayerBack)));
             scene.setBackground(autoParallaxBackground);
             
-//            private void createTiledSprite()
-//            {
-//                    AnimatedSprite Player = new AnimatedSprite(0, 0, tiledTextureRegion, vbo);
-//                    long[] frameDurration = {100, 100, 100};
-//                    as.animate(frameDurration);
-//                    scene.attachChild(as);
-//            }
+            final int playerX = (CAMERA_WIDTH - this.mPlayerTextureRegion.getTileWidth()) / 2;
+    		final int playerY = CAMERA_HEIGHT - this.mPlayerTextureRegion.getTileHeight() - 5;
+
+    		/* Create two sprits and add it to the scene. */
+    		final AnimatedSprite player = new AnimatedSprite(playerX - 200, playerY - 40, this.mPlayerTextureRegion);
+    		player.setScaleCenterY(this.mPlayerTextureRegion.getTileHeight());
+    		player.setScale(2);
+    		player.animate(new long[]{200, 200, 200}, 3, 5, true);    
             
-            
-            
+    		scene.attachChild(player);
             
             return scene;
             

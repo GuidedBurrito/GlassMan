@@ -1,7 +1,5 @@
 package ca.project2.glassman;
 
-import java.io.IOException;
-
 import javax.microedition.khronos.opengles.GL10;
 
 import org.anddev.andengine.engine.Engine;
@@ -35,7 +33,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Handler;
 import android.view.KeyEvent;
-import android.widget.Toast;
+
 
 public class MainMenu extends BaseGameActivity implements IOnMenuItemClickListener {
 	// ===========================================================
@@ -181,10 +179,13 @@ public class MainMenu extends BaseGameActivity implements IOnMenuItemClickListen
 				AlertDialog.Builder builder = new AlertDialog.Builder(this); // creates new dialogbox		 
 				 builder.setCancelable(false); // user cant cancel the textbox must select yes or no
 				 builder.setTitle("Help"); // sets dialogbox title
-				 builder.setMessage("It works"); // sets dialogbox message
+				 builder.setMessage("Welcome to GlassMan! \n \n " +
+				 					"In GlassMan you must avoid running into obstacles while you run through the street. \n \n" +
+				 					"To ovioid obstacles, jump over them by tapping the screen.\n \n Watch out for coins!" +
+				 					" Collecting them will boost your score! \n \n How long can you survive?"); // sets dialogbox message
 				 
 				 builder.setInverseBackgroundForced(true); // inveses the background
-				 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() { // creates the yes button for the dialogbox
+				 builder.setPositiveButton("GO!", new DialogInterface.OnClickListener() { // creates the yes button for the dialogbox
 				   
 					 @Override
 				   public void onClick(DialogInterface dialog, int which) {
