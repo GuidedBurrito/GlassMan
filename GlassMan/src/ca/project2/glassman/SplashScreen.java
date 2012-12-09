@@ -61,7 +61,7 @@ public class SplashScreen extends BaseGameActivity {
 	public Scene onLoadScene() {
 		this.mEngine.registerUpdateHandler(new FPSLogger());
 
-		final Scene scene = new Scene(1);
+		final Scene scene = new Scene();
 
 		/* Center the splash on the camera. */
 		final int centerX = (CAMERA_WIDTH - this.mSplashTextureRegion

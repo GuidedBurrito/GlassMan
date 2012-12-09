@@ -1,5 +1,7 @@
 package ca.project2.glassman;
 
+import java.io.IOException;
+
 import javax.microedition.khronos.opengles.GL10;
 
 import org.anddev.andengine.engine.Engine;
