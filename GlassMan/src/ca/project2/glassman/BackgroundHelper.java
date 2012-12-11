@@ -1,8 +1,12 @@
 package ca.project2.glassman;
 
-	import org.anddev.andengine.ui.activity.BaseGameActivity;
-	import android.view.Menu;
-	import android.view.MenuItem;
+import org.anddev.andengine.ui.activity.BaseGameActivity;
+
+import android.view.Menu;
+import android.view.MenuItem;
+
+	
+	
 
 	public abstract class BackgroundHelper extends BaseGameActivity {
 		// ===========================================================
