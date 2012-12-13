@@ -13,7 +13,6 @@ import org.anddev.andengine.engine.camera.Camera;
 import org.anddev.andengine.engine.options.EngineOptions;
 import org.anddev.andengine.engine.options.EngineOptions.ScreenOrientation;
 import org.anddev.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
-import org.anddev.andengine.entity.modifier.MoveXModifier;
 import org.anddev.andengine.entity.scene.Scene;
 import org.anddev.andengine.entity.scene.background.AutoParallaxBackground;
 import org.anddev.andengine.entity.scene.background.ParallaxBackground.ParallaxEntity;
@@ -68,14 +67,12 @@ public class GameOver extends BaseGameActivity{
 	public Scene onLoadScene() {
 		this.mEngine.registerUpdateHandler(new FPSLogger());
 
-		MoveXModifier left = new MoveXModifier(5f, CAMERA_WIDTH - 15, 0);
-
 		//create new scene
 		scene = new Scene(1);
 		//create a new parallax background
 		final AutoParallaxBackground autoParallaxBackground = new AutoParallaxBackground(0, 0, 0, 5);
 		//add a entity to the auto parallax background
-		autoParallaxBackground.attachParallaxEntity(new ParallaxEntity(-20.0f, new Sprite(0, CAMERA_HEIGHT - this.mParallaxLayerBack.getHeight(), this.mParallaxLayerBack)));
+		autoParallaxBackground.attachParallaxEntity(new ParallaxEntity(0.0f, new Sprite(0, CAMERA_HEIGHT - this.mParallaxLayerBack.getHeight(), this.mParallaxLayerBack)));
 		//add background to the scene
 		scene.setBackground(autoParallaxBackground);
 
@@ -84,7 +81,7 @@ public class GameOver extends BaseGameActivity{
 		final int playerY = CAMERA_HEIGHT - this.mGameOverTextTextureRegion.getHeight() - 5;
 
 		//add the game over sprite
-		GameOverText = new Sprite(playerX - 200, playerY - 40, this.mGameOverTextTextureRegion);
+		GameOverText = new Sprite(playerX, playerY - 40, this.mGameOverTextTextureRegion);
 		GameOverText.setScaleCenterY(this.mGameOverTextTextureRegion.getHeight());
 		GameOverText.setScale(2);
 

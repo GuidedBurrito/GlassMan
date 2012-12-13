@@ -14,11 +14,15 @@
 package ca.project2.glassman;
 
 
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Random;
 
 import org.anddev.andengine.engine.Engine;
 import org.anddev.andengine.engine.camera.Camera;
 import org.anddev.andengine.engine.handler.IUpdateHandler;
+import org.anddev.andengine.engine.handler.timer.ITimerCallback;
+import org.anddev.andengine.engine.handler.timer.TimerHandler;
 import org.anddev.andengine.engine.options.EngineOptions;
 import org.anddev.andengine.engine.options.EngineOptions.ScreenOrientation;
 import org.anddev.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
@@ -52,16 +56,13 @@ public class Game extends BackgroundHelper {
 
 	//declare objects
 	private Camera mCamera;
-
+	private LinkedList<Sprite> ObjectsToBeAdded;
 	private Texture mTexture;
 	private Font mFont;
-	private TextureRegion mBarrelTextureRegion;
-	private TextureRegion mCrateTextureRegion;
+	private TextureRegion mObjectTextureRegion;
 	private Texture mAutoParallaxBackgroundTexture;
 	private TiledTextureRegion mPlayerTextureRegion;
 	private Scene scene;
-	private Sprite Crate;
-	private Sprite Barrel;
 	private AnimatedSprite player;
 	private TextureRegion mParallaxLayerBack; 
 	private int CurrentScore = 0;
@@ -70,6 +71,7 @@ public class Game extends BackgroundHelper {
 	private Texture mFontTexture;
 	private int InitialTime = 30000*20;
 	private CountDownTimer timer;
+	private LinkedList<Sprite> ObjectIterator;
 
 	@Override
 	//Load engine to application
@@ -90,8 +92,10 @@ public class Game extends BackgroundHelper {
 		this.mAutoParallaxBackgroundTexture = new Texture(1024, 1024, TextureOptions.DEFAULT);
 		this.mParallaxLayerBack = TextureRegionFactory.createFromAsset(this.mAutoParallaxBackgroundTexture, this, "gfx/BackgroundResized.png", 0, 188);
 		this.mPlayerTextureRegion = TextureRegionFactory.createTiledFromAsset(this.mTexture, this, "gfx/GlassPlayer.png", 0, 0, 3, 4);
-		this.mBarrelTextureRegion = TextureRegionFactory.createFromAsset(this.mTexture, this, "gfx/BarrelPictureResized.png", 128, 0);
-		this.mCrateTextureRegion = TextureRegionFactory.createFromAsset(this.mTexture, this, "gfx/CratePictureResized.png", 128, 0);
+		this.mObjectTextureRegion = TextureRegionFactory.createFromAsset(this.mTexture, this, "gfx/CratePictureResized.png", 128, 0);
+		
+		
+		
 		//add textures to and engine
 		this.mEngine.getTextureManager().loadTexture(this.mTexture);
 		this.mEngine.getTextureManager().loadTexture(this.mAutoParallaxBackgroundTexture);
@@ -135,16 +139,16 @@ public class Game extends BackgroundHelper {
 
 		scene.attachChild(player);
 
-		MoveXModifier left = new MoveXModifier(5f, CAMERA_WIDTH - 15, 0);
-
-		Crate = new Sprite(CAMERA_WIDTH, playerY - 50, mCrateTextureRegion);
-		Crate.registerEntityModifier(left);
-		scene.attachChild(Crate);
-
 		score = new ChangeableText(0, 0, mFont, String.valueOf(0), "XXXXXX".length());
 		// repositioning the score later so we can use the score.getWidth()
 		score.setPosition(mCamera.getWidth()/2 - score.getWidth() - 5, 5);
 		scene.attachChild(score);
+		
+		ObjectIterator = new LinkedList<Sprite>();
+		ObjectsToBeAdded = new LinkedList<Sprite>();
+		
+		createSpriteSpawnTimeHandler();
+		scene.registerUpdateHandler(detect);
 
 		timer = new CountDownTimer(InitialTime, 1000) { // creates a new timer
 			@Override
@@ -170,29 +174,48 @@ public class Game extends BackgroundHelper {
 
 	IUpdateHandler detect = new IUpdateHandler() {
 		public void onUpdate(float pSecondsElapsed) {
+			
+			Iterator<Sprite> Object = ObjectIterator.iterator();
+			Sprite _Object;
+			
+			while (Object.hasNext()) {
+				_Object = Object.next();
+
+				// if target passed the left edge of the screen, then remove it
+				// and call a fail
+				if (_Object.getX() <= -_Object.getWidth()) {
+					scene.detachChild(_Object);
+					continue;
+				}
+
+					// if the targets collides with a projectile, remove the
+					// projectile and set the hit flag to true
+					if (_Object.collidesWith(player)) {
+						scene.detachChild(player);
+						Intent myIntent = new Intent(Game.this, GameOver.class);
+						Game.this.startActivity(myIntent);
+						break;
+					}
+			}
 
 			if (CurrentScore > 500 && count == 3){
 				count = 0;
 				//spawn enemy
-				spawnEnemy();
+				addObject();
 			}
 			else if (CurrentScore > 100 && count == 4){
 				count = 0;
 				//spawn enemy
-				spawnEnemy();
+				addObject();
 			}
 			else if (count == 5){
 				count = 0;
 				//spawn enemy
-				spawnEnemy();
+				addObject();
 			}	
-			if (Crate.getX() <= 0){
-				removeSprite(Crate);
-			}
-			if (Crate.collidesWith(player)) {
-				Intent myIntent = new Intent(Game.this, GameOver.class);
-				Game.this.startActivity(myIntent);
-			}
+			
+			ObjectIterator.addAll(ObjectsToBeAdded);
+			ObjectsToBeAdded.clear();
 		}//end onUpdate method
 
 		@Override
@@ -201,36 +224,39 @@ public class Game extends BackgroundHelper {
 
 		}
 	};
-	public void removeSprite(final Sprite _sprite) {
-		runOnUpdateThread(new Runnable() {
-			@Override
-			public void run() {
-				scene.detachChild(_sprite);//detach a sprite from the scene
-			}//end of run method
-		});//end of runOnUpdateThread runnable
-	}//end of removeSprite method
+	
+	public void addObject() {
+		int x = ((CAMERA_WIDTH - this.mPlayerTextureRegion.getTileWidth()) / 2) - 200;
+		int y = (CAMERA_HEIGHT - this.mPlayerTextureRegion.getTileHeight() - 5 + mObjectTextureRegion.getWidth()) - 40;
 
-	public void spawnEnemy(){
-		final int playerY = CAMERA_HEIGHT - this.mPlayerTextureRegion.getTileHeight() - 5;
-		MoveXModifier left = new MoveXModifier(5f, CAMERA_WIDTH - 15, 0);
-		Random randomEnemy = new Random();
-		int EnemyNum = randomEnemy.nextInt(2);
-		//an if statement that will load the enemy in either path
-		//depending on the number send out a different enemy
-		if (EnemyNum == 0){
-			//code for first enemy	
-			Crate = new Sprite(CAMERA_WIDTH, playerY - 50, mCrateTextureRegion);
-			Crate.registerEntityModifier(left);
-			scene.attachChild(Crate);
-		}
+		Sprite Object = new Sprite(x+800, y - 40, mObjectTextureRegion);
+		scene.attachChild(Object);
 
-		else {
-			//code for second enemy
-			Barrel = new Sprite(CAMERA_WIDTH, playerY - 50, mBarrelTextureRegion);
-			Barrel.registerEntityModifier(left);
-			scene.attachChild(Barrel);
-		}
-	}//end of spawn enemy
+		int actualDuration = 4;
+
+		MoveXModifier mod = new MoveXModifier(actualDuration, Object.getX(), -Object.getWidth());
+		Object.registerEntityModifier(mod);
+		ObjectsToBeAdded.add(Object);
+
+	}
+	
+	private void createSpriteSpawnTimeHandler() {
+		TimerHandler spriteTimerHandler;
+		float mEffectSpawnDelay = 1f;
+
+		spriteTimerHandler = new TimerHandler(mEffectSpawnDelay, true,
+				new ITimerCallback() {
+
+					@Override
+					public void onTimePassed(TimerHandler pTimerHandler) {
+
+						addObject();
+					}
+				});
+
+		getEngine().registerUpdateHandler(spriteTimerHandler);
+	}
+
 	public void jump()
 	{      
 		//player jumps
@@ -243,7 +269,7 @@ public class Game extends BackgroundHelper {
 		player.setScale(2);
 		player.animate(new long[]{200, 200, 200}, 3, 5, true);
 		scene.attachChild(player);
-		CountDownTimer timer = new CountDownTimer(2000, 1000) {
+		CountDownTimer timer = new CountDownTimer(500, 1000) {
 			//what happens when the timer ticks down
 			public void onTick(long howMuchTimeLeft) {
 			}
