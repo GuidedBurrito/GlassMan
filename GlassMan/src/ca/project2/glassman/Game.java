@@ -24,12 +24,14 @@ import org.anddev.andengine.engine.options.EngineOptions.ScreenOrientation;
 import org.anddev.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.anddev.andengine.entity.modifier.MoveXModifier;
 import org.anddev.andengine.entity.scene.Scene;
+import org.anddev.andengine.entity.scene.Scene.IOnSceneTouchListener;
 import org.anddev.andengine.entity.scene.background.AutoParallaxBackground;
 import org.anddev.andengine.entity.scene.background.ParallaxBackground.ParallaxEntity;
 import org.anddev.andengine.entity.sprite.AnimatedSprite;
 import org.anddev.andengine.entity.sprite.Sprite;
 import org.anddev.andengine.entity.text.ChangeableText;
 import org.anddev.andengine.entity.util.FPSLogger;
+import org.anddev.andengine.input.touch.TouchEvent;
 import org.anddev.andengine.opengl.font.Font;
 import org.anddev.andengine.opengl.font.FontFactory;
 import org.anddev.andengine.opengl.texture.Texture;
@@ -93,7 +95,7 @@ public class Game extends BackgroundHelper {
 		//add textures to and engine
 		this.mEngine.getTextureManager().loadTexture(this.mTexture);
 		this.mEngine.getTextureManager().loadTexture(this.mAutoParallaxBackgroundTexture);
-		
+
 		this.mEngine.getTextureManager().loadTexture(mFontTexture);
 		this.mEngine.getFontManager().loadFont(mFont);
 	}//end of onLoadResources method
@@ -106,6 +108,21 @@ public class Game extends BackgroundHelper {
 		final AutoParallaxBackground autoParallaxBackground = new AutoParallaxBackground(0, 0, 0, 5);
 		autoParallaxBackground.attachParallaxEntity(new ParallaxEntity(-20.0f, new Sprite(0, CAMERA_HEIGHT - this.mParallaxLayerBack.getHeight(), this.mParallaxLayerBack)));
 		scene.setBackground(autoParallaxBackground);
+
+		scene.setOnSceneTouchListener(new IOnSceneTouchListener() {
+			@Override
+			public boolean onSceneTouchEvent(final Scene pScene, final TouchEvent pSceneTouchEvent) {
+				switch(pSceneTouchEvent.getAction()) {
+				case TouchEvent.ACTION_DOWN:
+					jump();
+					break;
+				case TouchEvent.ACTION_UP:
+					jump();
+					break;
+				}
+				return true;
+			}
+		});
 
 		final int playerX = (CAMERA_WIDTH - this.mPlayerTextureRegion.getTileWidth()) / 2;
 		final int playerY = CAMERA_HEIGHT - this.mPlayerTextureRegion.getTileHeight() - 5;
@@ -128,21 +145,21 @@ public class Game extends BackgroundHelper {
 		// repositioning the score later so we can use the score.getWidth()
 		score.setPosition(mCamera.getWidth()/2 - score.getWidth() - 5, 5);
 		scene.attachChild(score);
-		
+
 		timer = new CountDownTimer(InitialTime, 1000) { // creates a new timer
 			@Override
 			public void onTick(long millisUntilFinished) { // on every tick...
-				
+
 				CurrentScore = CurrentScore + 5;
-		score.setText(String.valueOf(CurrentScore));
-		scene.attachChild(score);
-		count = count + 1;
+				score.setText(String.valueOf(CurrentScore));
+				scene.attachChild(score);
+				count = count + 1;
 			} 
-			
+
 			public void onFinish() {// when the timer reaches 0
 			}
 		};
-		
+
 		return scene;
 	}//end of onLoadScene method
 
@@ -154,14 +171,7 @@ public class Game extends BackgroundHelper {
 	IUpdateHandler detect = new IUpdateHandler() {
 		public void onUpdate(float pSecondsElapsed) {
 
-			//add 1 second to the time
-			
-			if (CurrentScore > 1000 && count == 2){
-				count = 0;
-				//spawn enemy
-				spawnEnemy();
-			}
-			else if (CurrentScore > 500 && count == 3){
+			if (CurrentScore > 500 && count == 3){
 				count = 0;
 				//spawn enemy
 				spawnEnemy();
@@ -188,7 +198,7 @@ public class Game extends BackgroundHelper {
 		@Override
 		public void reset() {
 			// TODO Auto-generated method stub
-			
+
 		}
 	};
 	public void removeSprite(final Sprite _sprite) {
@@ -221,4 +231,39 @@ public class Game extends BackgroundHelper {
 			scene.attachChild(Barrel);
 		}
 	}//end of spawn enemy
+	public void jump()
+	{      
+		//player jumps
+		scene.detachChild(player);
+		final int playerX = (CAMERA_WIDTH - this.mPlayerTextureRegion.getTileWidth()) / 2;
+		final int playerY = CAMERA_HEIGHT - this.mPlayerTextureRegion.getTileHeight() - 5;
+		// Create a sprite to hand in
+		player = new AnimatedSprite(playerX - 200, playerY - 100, this.mPlayerTextureRegion);
+		player.setScaleCenterY(this.mPlayerTextureRegion.getTileHeight());
+		player.setScale(2);
+		player.animate(new long[]{200, 200, 200}, 3, 5, true);
+		scene.attachChild(player);
+		CountDownTimer timer = new CountDownTimer(2000, 1000) {
+			//what happens when the timer ticks down
+			public void onTick(long howMuchTimeLeft) {
+			}
+			public void onFinish() {
+				land();
+			}//end of the onFinish method
+		};//end of the new CountDownTimer
+		timer.start();		
+	}
+
+	public void land(){
+		//player jumps
+		scene.detachChild(player);
+		final int playerX = (CAMERA_WIDTH - this.mPlayerTextureRegion.getTileWidth()) / 2;
+		final int playerY = CAMERA_HEIGHT - this.mPlayerTextureRegion.getTileHeight() - 5;
+		// Create a sprite to hand in
+		player = new AnimatedSprite(playerX - 200, playerY - 40, this.mPlayerTextureRegion);
+		player.setScaleCenterY(this.mPlayerTextureRegion.getTileHeight());
+		player.setScale(2);
+		player.animate(new long[]{200, 200, 200}, 3, 5, true);
+		scene.attachChild(player);
+	}
 }//end of Game class
