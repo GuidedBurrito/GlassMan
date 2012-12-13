@@ -18,6 +18,7 @@ import java.util.Random;
 
 import org.anddev.andengine.engine.Engine;
 import org.anddev.andengine.engine.camera.Camera;
+import org.anddev.andengine.engine.handler.IUpdateHandler;
 import org.anddev.andengine.engine.options.EngineOptions;
 import org.anddev.andengine.engine.options.EngineOptions.ScreenOrientation;
 import org.anddev.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
@@ -27,7 +28,10 @@ import org.anddev.andengine.entity.scene.background.AutoParallaxBackground;
 import org.anddev.andengine.entity.scene.background.ParallaxBackground.ParallaxEntity;
 import org.anddev.andengine.entity.sprite.AnimatedSprite;
 import org.anddev.andengine.entity.sprite.Sprite;
+import org.anddev.andengine.entity.text.ChangeableText;
 import org.anddev.andengine.entity.util.FPSLogger;
+import org.anddev.andengine.opengl.font.Font;
+import org.anddev.andengine.opengl.font.FontFactory;
 import org.anddev.andengine.opengl.texture.Texture;
 import org.anddev.andengine.opengl.texture.TextureOptions;
 import org.anddev.andengine.opengl.texture.region.TextureRegion;
@@ -36,7 +40,8 @@ import org.anddev.andengine.opengl.texture.region.TiledTextureRegion;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.widget.TextView;
+import android.graphics.Typeface;
+import android.os.CountDownTimer;
 
 public class Game extends BackgroundHelper {
 	//declare constants
@@ -47,7 +52,7 @@ public class Game extends BackgroundHelper {
 	private Camera mCamera;
 
 	private Texture mTexture;
-
+	private Font mFont;
 	private TextureRegion mBarrelTextureRegion;
 	private TextureRegion mCrateTextureRegion;
 	private Texture mAutoParallaxBackgroundTexture;
@@ -57,11 +62,12 @@ public class Game extends BackgroundHelper {
 	private Sprite Barrel;
 	private AnimatedSprite player;
 	private TextureRegion mParallaxLayerBack; 
-
-	private TextView scoreTextView;
-	private double score = 0;//the score
+	private int CurrentScore = 0;
+	private ChangeableText score;//the score
 	private int count = 0; //counts the seconds
-
+	private Texture mFontTexture;
+	private int InitialTime = 30000*20;
+	private CountDownTimer timer;
 
 	@Override
 	//Load engine to application
@@ -77,7 +83,8 @@ public class Game extends BackgroundHelper {
 	public void onLoadResources() {
 		//create textures
 		this.mTexture = new Texture(256, 128, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
-
+		this.mFontTexture = new Texture(256, 256, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+		this.mFont = new Font(mFontTexture, Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD), 40, true, Color.WHITE);
 		this.mAutoParallaxBackgroundTexture = new Texture(1024, 1024, TextureOptions.DEFAULT);
 		this.mParallaxLayerBack = TextureRegionFactory.createFromAsset(this.mAutoParallaxBackgroundTexture, this, "gfx/BackgroundResized.png", 0, 188);
 		this.mPlayerTextureRegion = TextureRegionFactory.createTiledFromAsset(this.mTexture, this, "gfx/GlassPlayer.png", 0, 0, 3, 4);
@@ -86,6 +93,9 @@ public class Game extends BackgroundHelper {
 		//add textures to and engine
 		this.mEngine.getTextureManager().loadTexture(this.mTexture);
 		this.mEngine.getTextureManager().loadTexture(this.mAutoParallaxBackgroundTexture);
+		
+		this.mEngine.getTextureManager().loadTexture(mFontTexture);
+		this.mEngine.getFontManager().loadFont(mFont);
 	}//end of onLoadResources method
 
 	@Override
@@ -109,56 +119,78 @@ public class Game extends BackgroundHelper {
 		scene.attachChild(player);
 
 		MoveXModifier left = new MoveXModifier(5f, CAMERA_WIDTH - 15, 0);
-		
+
 		Crate = new Sprite(CAMERA_WIDTH, playerY - 50, mCrateTextureRegion);
 		Crate.registerEntityModifier(left);
 		scene.attachChild(Crate);
+
+		score = new ChangeableText(0, 0, mFont, String.valueOf(0), "XXXXXX".length());
+		// repositioning the score later so we can use the score.getWidth()
+		score.setPosition(mCamera.getWidth()/2 - score.getWidth() - 5, 5);
+		scene.attachChild(score);
+		
+		timer = new CountDownTimer(InitialTime, 1000) { // creates a new timer
+			@Override
+			public void onTick(long millisUntilFinished) { // on every tick...
+				
+				CurrentScore = CurrentScore + 5;
+		score.setText(String.valueOf(CurrentScore));
+		scene.attachChild(score);
+		count = count + 1;
+			} 
+			
+			public void onFinish() {// when the timer reaches 0
+			}
+		};
 		
 		return scene;
 	}//end of onLoadScene method
 
 	@Override
 	public void onLoadComplete() {
+		timer.start(); // start the timer
 	}//end of onLoadComplete method
 
-	public void onUpdate(float pSecondsElapsed) {
-		
-		scoreTextView = (TextView) findViewById(R.id.scoreTextView);
-		scoreTextView.setTextColor(Color.WHITE);
-		//add 1 second to the time
-		score = (score + 5);
-		count = count + 1;
-		//create the score text view
-		scoreTextView.setText("" + score);
-		if (score > 1000 && count == 2){
-			count = 0;
-			//spawn enemy
-			spawnEnemy();
-		}
-		else if (score > 500 && count == 3){
-			count = 0;
-			//spawn enemy
-			spawnEnemy();
-		}
-		else if (score > 100 && count == 4){
-			count = 0;
-			//spawn enemy
-			spawnEnemy();
-		}
-		else if (count == 5){
-			count = 0;
-			//spawn enemy
-			spawnEnemy();
-		}	
-		if (Crate.getX() <= 0){
-			removeSprite(Crate);
-		}
-		if (Crate.collidesWith(player)) {
-			Intent myIntent = new Intent(Game.this, GameOver.class);
-			Game.this.startActivity(myIntent);
-		}
-	}//end onUpdate method
+	IUpdateHandler detect = new IUpdateHandler() {
+		public void onUpdate(float pSecondsElapsed) {
 
+			//add 1 second to the time
+			
+			if (CurrentScore > 1000 && count == 2){
+				count = 0;
+				//spawn enemy
+				spawnEnemy();
+			}
+			else if (CurrentScore > 500 && count == 3){
+				count = 0;
+				//spawn enemy
+				spawnEnemy();
+			}
+			else if (CurrentScore > 100 && count == 4){
+				count = 0;
+				//spawn enemy
+				spawnEnemy();
+			}
+			else if (count == 5){
+				count = 0;
+				//spawn enemy
+				spawnEnemy();
+			}	
+			if (Crate.getX() <= 0){
+				removeSprite(Crate);
+			}
+			if (Crate.collidesWith(player)) {
+				Intent myIntent = new Intent(Game.this, GameOver.class);
+				Game.this.startActivity(myIntent);
+			}
+		}//end onUpdate method
+
+		@Override
+		public void reset() {
+			// TODO Auto-generated method stub
+			
+		}
+	};
 	public void removeSprite(final Sprite _sprite) {
 		runOnUpdateThread(new Runnable() {
 			@Override

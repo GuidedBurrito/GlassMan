@@ -70,14 +70,11 @@ public class SplashScreen extends BaseGameActivity {
 		final Scene scene = new Scene(1);
 
 		//Center the splash on the camera.
-		final int centerX = (CAMERA_WIDTH - this.mSplashTextureRegion
-				.getWidth()) / 2;
-		final int centerY = (CAMERA_HEIGHT - this.mSplashTextureRegion
-				.getHeight()) / 2;
+		final int centerX = (CAMERA_WIDTH - this.mSplashTextureRegion.getWidth()) / 2;
+		final int centerY = (CAMERA_HEIGHT - this.mSplashTextureRegion.getHeight()) / 2;
 
 		//Create the sprite and add it to the scene.
-		final Sprite splash = new Sprite(centerX, centerY,
-				this.mSplashTextureRegion);
+		final Sprite splash = new Sprite(centerX, centerY, this.mSplashTextureRegion);
 		scene.getLastChild().attachChild(splash);
 		//return the scene and the objects added to the scene
 		return scene;
