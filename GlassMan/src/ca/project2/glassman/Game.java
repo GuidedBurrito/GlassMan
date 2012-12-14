@@ -65,7 +65,7 @@ public class Game extends BackgroundHelper {
 	private Scene scene;
 	private AnimatedSprite player;
 	private TextureRegion mParallaxLayerBack; 
-	private int CurrentScore = 0;
+	public static int CurrentScore = 0;
 	private ChangeableText score;//the score
 	private int count = 0; //counts the seconds
 	private Texture mFontTexture;

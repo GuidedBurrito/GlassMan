@@ -99,7 +99,7 @@ public class MainMenu extends BaseGameActivity implements IOnMenuItemClickListen
 		this.mEngine.getFontManager().loadFont(this.mFont);
 		//create new menu texture, add new menu texture to and engine
 		this.mMenuBackTexture = new Texture(512, 512, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
-		this.mMenuBackTextureRegion = TextureRegionFactory.createFromAsset(this.mMenuBackTexture, this, "gfx/BackgroundResized.png", 0, 0);
+		this.mMenuBackTextureRegion = TextureRegionFactory.createFromAsset(this.mMenuBackTexture, this, "gfx/MenuBackground.png", 0, 0);
 		this.mEngine.getTextureManager().loadTexture(this.mMenuBackTexture);
 		//create new popup texture, add buttons and add them to the and engine
 		this.mPopUpTexture = new Texture(512, 512, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
@@ -210,11 +210,11 @@ public class MainMenu extends BaseGameActivity implements IOnMenuItemClickListen
 		playMenuItem.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 		this.mStaticMenuScene.addMenuItem(playMenuItem);
 
-		final IMenuItem helpMenuItem = new ColorMenuItemDecorator( new TextMenuItem(MENU_HELP, mFont, "Help"), 0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f);
+		final IMenuItem helpMenuItem = new ColorMenuItemDecorator( new TextMenuItem(MENU_HELP, mFont, "Help"), 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
 		helpMenuItem.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 		this.mStaticMenuScene.addMenuItem(helpMenuItem);
 		
-		final IMenuItem quitMenuItem = new ColorMenuItemDecorator( new TextMenuItem(MENU_QUIT, mFont, "Quit"), 0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f);
+		final IMenuItem quitMenuItem = new ColorMenuItemDecorator( new TextMenuItem(MENU_QUIT, mFont, "Quit"), 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
 		quitMenuItem.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 		this.mStaticMenuScene.addMenuItem(quitMenuItem);
 		this.mStaticMenuScene.buildAnimations();

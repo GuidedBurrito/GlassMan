@@ -24,6 +24,11 @@ import org.anddev.andengine.opengl.texture.region.TextureRegion;
 import org.anddev.andengine.opengl.texture.region.TextureRegionFactory;
 import org.anddev.andengine.ui.activity.BaseGameActivity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Handler;
+
 public class GameOver extends BaseGameActivity{
 
 	//declare constants
@@ -33,7 +38,7 @@ public class GameOver extends BaseGameActivity{
 	//declare objects
 	private Camera mCamera;
 	private Scene scene;
-
+	private Handler mHandler;
 	private Texture mTexture;
 
 	private Texture mAutoParallaxBackgroundTexture;
@@ -62,7 +67,7 @@ public class GameOver extends BaseGameActivity{
 		this.mEngine.getTextureManager().loadTexture(this.mTexture);
 		this.mEngine.getTextureManager().loadTexture(this.mAutoParallaxBackgroundTexture);
 	}//end of onLoadResources method
-	
+
 	//load scene to application
 	public Scene onLoadScene() {
 		this.mEngine.registerUpdateHandler(new FPSLogger());
@@ -88,12 +93,40 @@ public class GameOver extends BaseGameActivity{
 		//add the game over text to the scene
 		scene.attachChild(GameOverText);
 
+		run();
+
 		//return the scene
 		return scene;
 	}//end of onLoadScene method
 
 	@Override
 	public void onLoadComplete() {
-		// TODO Auto-generated method stub
+
 	}//end of onLoadComplete method
+
+	public void run() {
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(this); // creates new dialogbox		 
+		builder.setCancelable(false); // user cant cancel the textbox must select yes or no
+		builder.setTitle("Game Over!"); // sets dialogbox title
+		builder.setMessage("Your Score: " + Game.CurrentScore); // sets dialogbox message
+
+		builder.setInverseBackgroundForced(true); // inveses the background
+		builder.setPositiveButton("Menu", new DialogInterface.OnClickListener() { // creates the yes button for the dialogbox
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss(); // closes dialogbox
+				menuCall();
+			}
+		});
+		AlertDialog alert = builder.create(); 
+		alert.show(); // shows dialogbox
+	}
+
+
+	public void menuCall() {
+		Intent myIntent = new Intent(GameOver.this, MainMenu.class);
+		GameOver.this.startActivity(myIntent);
+	};
 }//end of GameOver class
